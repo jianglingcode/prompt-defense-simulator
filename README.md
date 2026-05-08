@@ -18,6 +18,9 @@ prompt inserted into the assignment-style system prompt, then checks:
 
 ## Setup
 
+Install Python 3 first if `python --version` or `py --version` does not work in
+your terminal.
+
 Set your DeepSeek API key as a user environment variable:
 
 ```powershell
@@ -35,6 +38,8 @@ For one-click use on Windows, double-click:
 ```text
 run_hw1_simulator.bat
 ```
+
+If the key is not set yet, the launcher will ask you to paste it for that run.
 
 ## Notes
 
