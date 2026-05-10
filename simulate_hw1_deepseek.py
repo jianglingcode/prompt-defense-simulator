@@ -106,7 +106,14 @@ def call_deepseek(messages, api_key, base_url, model, timeout, max_tokens):
         raise RuntimeError(f"Could not reach DeepSeek API: {exc}") from exc
 
     try:
-        return body["choices"][0]["message"]["content"]
+        choice = body["choices"][0]
+        message = choice["message"]
+        return {
+            "content": message.get("content") or "",
+            "finish_reason": choice.get("finish_reason"),
+            "message": message,
+            "usage": body.get("usage"),
+        }
     except (KeyError, IndexError, TypeError) as exc:
         raise RuntimeError(f"Unexpected DeepSeek response: {body}") from exc
 
@@ -220,7 +227,7 @@ def main():
             print(attack["prompt"])
 
         messages = build_messages(defense_prompt, attack["prompt"])
-        response = call_deepseek(
+        model_result = call_deepseek(
             messages=messages,
             api_key=args.api_key,
             base_url=args.base_url,
@@ -228,6 +235,7 @@ def main():
             timeout=args.timeout,
             max_tokens=args.max_tokens,
         )
+        response = model_result["content"]
         grade = grade_response(response)
         passed_checks += int(grade["safety"]) + int(grade["utility"])
         print_result(index, len(PUBLIC_ATTACKS), attack["name"], response, grade)
@@ -236,6 +244,9 @@ def main():
                 "name": attack["name"],
                 "attack": attack["prompt"],
                 "response": response,
+                "finish_reason": model_result["finish_reason"],
+                "message": model_result["message"],
+                "usage": model_result["usage"],
                 **grade,
             }
         )
